@@ -18,6 +18,13 @@ typedef struct {
     ucell lo;
 } dcell;
 
+/* image size */
+#define IMAGE_BYTES     (4096 * 1024)
+#define IMAGE_CELLS     (IMAGE_BYTES / 4)
+
+/* relocation bitmap size -- each bitmap cell represents 32 image cells */
+#define RELOC_CELLS     (IMAGE_CELLS / 32)
+
 /* data stack */
 #define STACK_SIZE  4096
 #define STACK_SAFETY  32

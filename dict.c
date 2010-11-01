@@ -274,7 +274,7 @@ static void init_chain(struct dict_name *pchain, struct inm *pinm)
 
 static void allocate()
 {
-    ph0 = (cell *)  mmap(0, 1024 * 4096, PROT_READ | PROT_WRITE,
+    ph0 = (cell *)  mmap(0, IMAGE_BYTES, PROT_READ | PROT_WRITE,
                             MAP_ANON | MAP_PRIVATE, -1, 0);
 
     if (ph0 == MAP_FAILED)

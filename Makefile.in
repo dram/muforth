@@ -19,7 +19,9 @@ ARCH_LD=	%archldflags%
 #DEBUG=		-DDEBUG_TOKEN
 
 # Core objects
-COREOBJS=	kernel.o interpret.o dict.o mp-math.o engine-itc.o error.o
+COREOBJS=	kernel.o interpret.o dict.o mp-math.o engine-itc.o error.o \
+		reloc.o
+MAINOBJS=	main.o thaw.o
 		
 # Platform definitions
 
@@ -34,25 +36,27 @@ WARNPLATFORM=	yes
 
 .if ${MUPLATFORM} == "nixy"
 # This is the "standard" Unix-y platform.
-PLATOBJS=	time.o tty.o select.o file.o main.o
+PLATOBJS=	time.o tty.o select.o file.o
 PLATDEFS=	-DWITH_TIME
 .endif
 
 .if ${MUPLATFORM} == "nixed"
 # Like nixy, but without time, tty, and select support.
-PLATOBJS=	file.o main.o
+PLATOBJS=	file.o
 .endif
 
 # If any of these files changes, make a new version.h
-VERSOBJS=	${COREOBJS} ${PLATOBJS}
+VERSOBJS=	${COREOBJS} ${PLATOBJS} ${MAINOBJS}
 
 ALLOBJS=	${VERSOBJS} muforth.o
+MUFORTH_O=	${COREOBJS} ${PLATOBJS} muforth.o main.o
+THAW_O=		${COREOBJS} ${PLATOBJS} muforth.o thaw.o
 makefiles=	Makefile platform.mk
 DEPFILES=	$(makefiles) muforth.h env.h
 
 .PHONY: all clean httplink diffsed show-plat
 
-all : show-plat public.h muforth
+all : show-plat public.h muforth muthaw
 
 show-plat :
 	@echo "====================================================================="
@@ -129,11 +133,14 @@ version.h : $(makefiles) ${VERSOBJS}
 	@echo "time_t build_time = `date \"+%s\"`;" > version.h
 	@echo "char* build_date = \"`date \"+%Y-%b-%d %T %Z\"`\";" >> version.h
 
-muforth : ${ALLOBJS} ${DEPFILES}
-	${CC} ${LDFLAGS} -o ${.TARGET} ${ALLOBJS} ${LIBS}
+muforth : ${MUFORTH_O} ${DEPFILES}
+	${CC} ${LDFLAGS} -o ${.TARGET} ${MUFORTH_O} ${LIBS}
 
-muforth-bare : ${ALLOBJS} ${DEPFILES}
-	${CC} ${LDFLAGS} -nodefaultlibs -o ${.TARGET} ${ALLOBJS} ${LIBS}
+muthaw : ${THAW_O} ${DEPFILES}
+	${CC} ${LDFLAGS} -o ${.TARGET} ${THAW_O} ${LIBS}
+
+muforth-bare : ${MUFORTH_O} ${DEPFILES}
+	${CC} ${LDFLAGS} -nodefaultlibs -o ${.TARGET} ${MUFORTH_O} ${LIBS}
 
 .c.asm : $(makefiles) muforth.h
 	${CC} ${CFLAGS} -S -o ${.TARGET} -c ${.IMPSRC}

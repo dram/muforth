@@ -60,7 +60,8 @@ int main(int argc, char *argv[])
 {
     muforth_init();
     convert_command_line(argc, argv);
-    muforth_start();
+    muforth_load_startup();
+    muforth_interpret_warm();
     return 0;
 }
 
